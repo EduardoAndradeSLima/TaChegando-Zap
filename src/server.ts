@@ -1,5 +1,6 @@
 import express from 'express';
 import 'dotenv/config';
+import { getStage, isDup } from './db';
 
 const app = express();
 app.use(express.json());
@@ -26,9 +27,15 @@ app.post('/webhook', async (req, res) => {
     const msg = val?.messages?.[0];
     if (!msg) return;
 
+    const msgId: string = msg.id;
     const from: string = msg.from;
-    let txt = '';
 
+    if (isDup(msgId)) {
+      console.log(`[DUP] ${msgId} ignorada`);
+      return;
+    }
+
+    let txt = '';
     if (msg.type === 'text') {
       txt = msg.text.body;
     } else if (msg.type === 'interactive' && msg.interactive?.type === 'button_reply') {
@@ -37,7 +44,8 @@ app.post('/webhook', async (req, res) => {
       return;
     }
 
-    console.log(`[MSG] ${from}: ${txt}`);
+    const stage = getStage(from);
+    console.log(`[MSG] ${from} (${stage}): ${txt}`);
   } catch (err) {
     console.error('Erro webhook:', err);
   }
