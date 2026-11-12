@@ -1,6 +1,7 @@
 import express from 'express';
 import 'dotenv/config';
-import { getStage, isDup } from './db';
+import { isDup } from './db';
+import { handleMsg } from './bot';
 
 const app = express();
 app.use(express.json());
@@ -44,8 +45,8 @@ app.post('/webhook', async (req, res) => {
       return;
     }
 
-    const stage = getStage(from);
-    console.log(`[MSG] ${from} (${stage}): ${txt}`);
+    console.log(`[MSG] ${from}: ${txt}`);
+    await handleMsg(from, txt);
   } catch (err) {
     console.error('Erro webhook:', err);
   }
